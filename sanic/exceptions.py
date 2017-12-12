@@ -1,4 +1,4 @@
-from sanic.response import ALL_STATUS_CODES, COMMON_STATUS_CODES
+from sanic.response import STATUS_CODES
 
 TRACEBACK_STYLE = '''
     <style>
@@ -155,6 +155,13 @@ class ServerError(SanicException):
     pass
 
 
+@add_status_code(503)
+class ServiceUnavailable(SanicException):
+    """The server is currently unavailable (because it is overloaded or
+    down for maintenance). Generally, this is a temporary state."""
+    pass
+
+
 class URLBuildError(ServerError):
     pass
 
@@ -170,6 +177,13 @@ class FileNotFound(NotFound):
 
 @add_status_code(408)
 class RequestTimeout(SanicException):
+    """The Web server (running the Web site) thinks that there has been too
+    long an interval of time between 1) the establishment of an IP
+    connection (socket) between the client and the server and
+    2) the receipt of any data on that socket, so the server has dropped
+    the connection. The socket connection has actually been lost - the Web
+    server has 'timed out' on that particular socket connection.
+    """
     pass
 
 
@@ -261,8 +275,7 @@ def abort(status_code, message=None):
                     in response.py for the given status code.
     """
     if message is None:
-        message = COMMON_STATUS_CODES.get(status_code,
-                                          ALL_STATUS_CODES.get(status_code))
+        message = STATUS_CODES.get(status_code)
         # These are stored as bytes in the STATUS_CODES dict
         message = message.decode('utf8')
     sanic_exception = _sanic_exceptions.get(status_code, SanicException)
